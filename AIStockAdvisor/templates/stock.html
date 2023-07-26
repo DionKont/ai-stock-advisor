@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Stock Advisor</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="header">
+        <h1>AI Stock Advisor</h1>
+    </div>
+    <div class="grid-container">
+        <div class="title-box">
+            <h1>Stock Data</h1>
+        </div>
+        <div class="item1">
+            <form method="post" action="">
+                {% csrf_token %}
+                <div class="time_interval">
+                    <select name="time_interval" required>
+                        <option value="1">1min</option>
+                        <option value="5">5min</option>
+                        <option value="15">15min</option>
+                        <option value="30">30min</option>
+                        <option value="60">60min</option>
+                    </select>
+                </div>
+                <div class="n_predictions">
+                    <input type="number" min="0" max="5000" name="n_predictions" placeholder="Number of Predictions" required>
+                </div>
+                <div class="stock_name">
+                    <input type="text" name="stock_name" placeholder="Enter stock name" required>
+                </div>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+        {% if company_data %}
+            <div class="company-info">
+                <div class="left-column">
+                    <h4 id="left-header">Company Name:</h4>
+                    <p>{{ company_data.name }}</p>
+                    <h4 id="left-header">Sector:</h4>
+                    <p>{{ company_data.sector }}</p>
+                    <h4 id="left-header">Industry:</h4>
+                    <p>{{ company_data.industry }}</p>
+                    <h4 id="left-header">Country:</h4>
+                    <p>{{ company_data.country }}</p>
+                    <h4 id="left-header">Description:</h4>
+                    <p>{{ company_data.description }}</p>
+                </div>
+                <div class="right-column">
+                    <h4>Exchange:</h4>
+                    <p>{{ company_data.exchange }}</p>
+                    <h4>Market_cap:</h4>
+                    <p>{{ company_data.market_cap }}</p>
+                    <h4>pe_ratio:</h4>
+                    <p>{{ company_data.pe_ratio }}</p>
+                    <h4>profit_margin:</h4>
+                    <p>{{ company_data.profit_margin }}</p>
+                    <h4>ebitda:</h4>
+                    <p>{{ company_data.ebitda }}</p>
+                    <h4>price_to_book_ratio:</h4>
+                    <p>{{ company_data.price_to_book_ratio }}</p>
+                </div>
+            </div>
+        {% endif %}
+        {% if stock_data %}
+            <div class="graphs-grid-item">
+                <div class="secondheader">
+                    <h2>Predictions</h2>
+                </div>
+                <div class="random-forest-graph">
+                    {% include "graphs/prophet.html" %}
+                </div>
+            </div>
+            <div class="stock-data-grid-item">
+                <h2>Stock Data for {{ stock_name }}</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Open</th>
+                            <th>High</th>
+                            <th>Low</th>
+                            <th>Close</th>
+                            <th>Volume</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock-data-body">
+                        {% for interval in stock_data %}
+                            {% if forloop.counter <= 10 %}
+                                <tr>
+                                    <td>{{ interval.timestamp }}</td>
+                                    <td>{{ interval.open }}</td>
+                                    <td>{{ interval.high }}</td>
+                                    <td>{{ interval.low }}</td>
+                                    <td>{{ interval.close }}</td>
+                                    <td>{{ interval.volume }}</td>
+                                </tr>
+                            {% else %}
+                                <tr class="hidden-row">
+                                    <td>{{ interval.timestamp }}</td>
+                                    <td>{{ interval.open }}</td>
+                                    <td>{{ interval.high }}</td>
+                                    <td>{{ interval.low }}</td>
+                                    <td>{{ interval.close }}</td>
+                                    <td>{{ interval.volume }}</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button id="show-all-button" onclick="showAllRows()">Show All</button>
+                <button id="show-less-button" onclick="showLessRows()">Show Less</button>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        var hiddenRows = document.getElementsByClassName('hidden-row');
+        var showAllButton = document.getElementById('show-all-button');
+        var showLessButton = document.getElementById('show-less-button');
+
+        function showAllRows() {
+            for (var i = 0; i < hiddenRows.length; i++) {
+                hiddenRows[i].style.display = 'table-row';
+            }
+            showAllButton.style.display = 'none';
+            showLessButton.style.display = 'block';
+        }
+
+        function showLessRows() {
+            for (var i = 0; i < hiddenRows.length; i++) {
+                hiddenRows[i].style.display = 'none';
+            }
+            showAllButton.style.display = 'block';
+            showLessButton.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
+
